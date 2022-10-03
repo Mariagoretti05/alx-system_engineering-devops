@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
-# set up load balancer
-sudo apt-get -y install software-properties-common
-sudo add-apt-repository -y ppa:vbernat/haproxy-1.8
-sudo apt-get -y update
-sudo apt-get -y install haproxy
+# Setup up HAproxy load balancer
+# Install HAproxy.
+sudo apt update
+sudo apt install -y haproxy
 
-sudo sed -i -e '$aENABLED=1\n' /etc/default/haproxy 
-sudo sed -i -e '$a\listen http-in\n\tbind :80\n\tbalance roundrobin\n\tserver 525-web-01 35.231.216.93:80 check\n\tserver 525-web-02 35.196.0.213:80 check\n' /etc/haproxy/haproxy.cfg
+# Enable HAProxy to be started by the init script.
+sudo sed -i '$aENABLED=1' /etc/default/haproxy
+
+# Setup load balancing frontend and backend options
+sudo sed -i '$a\\nfrontend http_front\n\tbind *:80\n\tstats uri /haproxy?stats\n\tdefault_backend http_back\n\nbackend http_back\n\tbalance roundrobin\n\tserver 20738-web-01 44.200.30.52:80 check\n\tserver 20738-web-02 3.235.172.223:80 check' /etc/haproxy/haproxy.cfg
+
+# Restart HAproxy
 sudo service haproxy restart
-
